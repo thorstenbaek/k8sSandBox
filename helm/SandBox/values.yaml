@@ -1,0 +1,4 @@
+dips-ehr-configuration:
+    deployment:
+        environmentVariables: 
+            TARGET_HOST: "https://interactor.localhost"
