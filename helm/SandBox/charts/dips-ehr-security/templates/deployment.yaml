@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "dips-fhir-service.fullname" . }}
+  name: {{ include "dips-ehr-security.fullname" . }}
   labels:
-    {{- include "dips-fhir-service.labels" . | nindent 4 }}
+    {{- include "dips-ehr-security.labels" . | nindent 4 }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   selector:
     matchLabels:
-      {{- include "dips-fhir-service.selectorLabels" . | nindent 6 }}
+      {{- include "dips-ehr-security.selectorLabels" . | nindent 6 }}
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        {{- include "dips-fhir-service.selectorLabels" . | nindent 8 }}
+        {{- include "dips-ehr-security.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "dips-fhir-service.serviceAccountName" . }}
+      serviceAccountName: {{ include "dips-ehr-security.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -33,8 +33,6 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-            {{- include "dips-fhir-service.list-env-variables" . | indent 12 }}
           ports:
             - name: http
               containerPort: 80

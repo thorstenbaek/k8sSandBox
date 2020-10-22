@@ -59,13 +59,15 @@ ingress:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"    
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: dips-ehr-configuration.sandbox-dev.norwayeast.cloudapp.azure.com
+    #- host: dips-ehr-configuration.sandbox-dev.norwayeast.cloudapp.azure.com
+    - host: dips-ehr-configuration.localhost
       paths: 
         - /      
   tls:
     - secretName: configuration-sandbox-tls
       hosts:
-        - dips-ehr-configuration.sandbox-dev.norwayeast.cloudapp.azure.com
+        # - dips-ehr-configuration.sandbox-dev.norwayeast.cloudapp.azure.com
+        - dips-ehr-configuration.localhost
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
