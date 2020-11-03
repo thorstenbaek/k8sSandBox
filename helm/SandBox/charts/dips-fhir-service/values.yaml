@@ -8,7 +8,9 @@ image:
   repository: thorstenbaek/dips-fhir-service
   pullPolicy: Always
   imageTagDelimiter: ":"
-  tag: "v1.0.0.3"
+  tag: "v1.0.0.4"  
+ports:
+  containerPort: 8080
 env:
   ENVIRONMENT: "dips-ehr-app.localhost"  
 

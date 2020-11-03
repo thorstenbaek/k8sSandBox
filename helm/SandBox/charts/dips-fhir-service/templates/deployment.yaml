@@ -37,7 +37,7 @@ spec:
             {{- include "dips-fhir-service.list-env-variables" . | indent 12 }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ .Values.ports.containerPort }}
               protocol: TCP
           # livenessProbe:
           #   httpGet:
