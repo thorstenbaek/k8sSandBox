@@ -33,9 +33,19 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- include "dips-ehr-configuration.list-env-variables" . | indent 12 }}
           ports:
             - name: http
+              {{- if .Values.ports }}              
+                {{- if .Values.ports.containerPort }}
+              containerPort: {{ .Values.ports.containerPort }}
+                {{ else }}              
               containerPort: 80
+                {{- end }}              
+              {{ else }}       
+              containerPort: 80       
+              {{- end }}      
               protocol: TCP
           # livenessProbe:
           #   httpGet:

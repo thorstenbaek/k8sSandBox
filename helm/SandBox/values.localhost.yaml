@@ -1,0 +1,49 @@
+dips-ehr-configuration:
+  env: 
+    CONFIGURATION_SOURCE_URL: https://raw.githubusercontent.com/thorstenbaek/dips-ehr-configuration/master/configuration.json  
+  ingress:
+    hosts:
+      - host: dips-ehr-configuration.localhost
+        paths: 
+          - /    
+    tls:
+      - secretName: configuration-sandbox-tls
+        hosts:
+          - dips-ehr-configuration.localhost
+
+dips-ehr-security:
+  ingress:
+    hosts:
+      - host: dips-ehr-security.localhost
+        paths: 
+          - /    
+    tls:
+      - secretName: security-sandbox-tls
+        hosts:                  
+          - dips-ehr-security.localhost
+
+dips-fhir-service:
+  env:
+    ENVIRONMENT: "dips-ehr-app.localhost"  
+    CONFIGURATION_SERVICE_URI: sandbox-dips-ehr-configuration
+  ingress:
+    hosts:
+      - host: dips-fhir-service.localhost
+        paths: 
+          - /
+    tls:
+      - secretName: fhir-service-sandbox-tls
+        hosts:
+          - dips-fhir-service.localhost
+
+dips-ehr-app:
+  ingress:
+    hosts:
+      - host: dips-ehr-app.localhost
+        paths: 
+          - /
+    tls:
+      - secretName: dips-ehr-app-sandbox-tls
+        hosts:
+          - dips-ehr-app.localhost
+

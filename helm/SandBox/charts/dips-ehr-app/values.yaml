@@ -8,7 +8,7 @@ image:
   repository: thorstenbaek/dips-ehr-app
   pullPolicy: Always
   imageTagDelimiter: ":"
-  tag: "v1.0.0.11"
+  tag: "v1.0.0.12"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -59,15 +59,9 @@ ingress:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     # kubernetes.io/tls-acme: "true"
   hosts:
-    # - host: dips-ehr-app.sandbox-dev.norwayeast.cloudapp.azure.com
-    - host: dips-ehr-app.localhost
-      paths: 
-        - /
-  tls:
-  - secretName: dips-ehr-app-sandbox-tls
-    hosts:
-      # - dips-ehr-app.sandbox-dev.norwayeast.cloudapp.azure.com
-      - dips-ehr-app.localhost
+    - host: chart-example.local
+      paths: []
+  tls: []
 
 
 resources: {}
