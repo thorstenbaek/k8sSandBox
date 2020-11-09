@@ -51,6 +51,8 @@ helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx
 cd helm\SandBox
 kubectl create namespace sandbox
 helm install sandbox . --namespace sandbox
+helm install sandbox . -f values.localhost.yaml -n sandbox
+//helm install sandbox . -f values.azure.yaml -n sandbox
 ```
 
 ### Useful commands
