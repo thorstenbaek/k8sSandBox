@@ -1,0 +1,48 @@
+{{- range $namespaces := .Values.namespaces }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $.Values.certificateName }}
+  namespace: {{ $namespaces.name }}
+data:
+  tls.crt: |-
+{{ $.Files.Get "certificates/ca_b64.crt" | indent 4 }}
+  tls.key: |-
+{{ $.Files.Get "certificates/ca_b64.key" | indent 4 }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $.Values.clientCertificateName }}
+  namespace: {{ $namespaces.name }}
+data:
+  tls.crt: |-
+{{ $.Files.Get "certificates/client_b64.crt" | indent 4 }}
+  tls.key: |-
+{{ $.Files.Get "certificates/client_b64.key" | indent 4 }}
+  ca.crt: |-
+{{ $.Files.Get "certificates/ca_b64.crt" | indent 4 }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $.Values.serverCertificateName }}
+  namespace: {{ $namespaces.name }}
+data:
+  tls.crt: |-
+{{ $.Files.Get "certificates/server_b64.crt" | indent 4 }}
+  tls.key: |-
+{{ $.Files.Get "certificates/server_b64.key" | indent 4 }}
+  ca.crt: |-
+{{ $.Files.Get "certificates/ca_b64.crt" | indent 4 }}
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: {{ $.Values.caIssuerName }}
+  namespace: {{ $namespaces.name }}
+spec:
+  ca:
+    secretName: {{ $.Values.certificateName }}
+---
+{{- end }}

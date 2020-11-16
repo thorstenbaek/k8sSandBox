@@ -3,46 +3,46 @@ dips-ehr-configuration:
     CONFIGURATION_SOURCE_URL: https://raw.githubusercontent.com/thorstenbaek/dips-ehr-configuration/master/configuration.json  
   ingress:
     hosts:
-      - host: dips-ehr-configuration.sandbox-dev.norwayeast.cloudapp.azure.com
+      - host: dips-ehr-configuration.api.dips.no
         paths: 
           - /    
     tls:
       - secretName: configuration-sandbox-tls
         hosts:
-          - dips-ehr-configuration.sandbox-dev.norwayeast.cloudapp.azure.com
+          - dips-ehr-configuration.api.dips.no
           
 dips-ehr-security:
   ingress:
     hosts:
-      - host: dips-ehr-security.sandbox-dev.norwayeast.cloudapp.azure.com
+      - host: dips-ehr-security.api.dips.no
         paths: 
           - /    
     tls:
       - secretName: security-sandbox-tls
         hosts:
-          - dips-ehr-security.sandbox-dev.norwayeast.cloudapp.azure.com
+          - dips-ehr-security.api.dips.no
 
 dips-fhir-service:
   env:
-    ENVIRONMENT: "dips-ehr-app.sandbox-dev.norwayeast.cloudapp.azure.com"  
+    ENVIRONMENT: "dips-ehr-app.api.dips.no"  
     CONFIGURATION_SERVICE_URI: sandbox-dips-ehr-configuration
   ingress:
     hosts:
-      - host: dips-fhir-service.sandbox-dev.norwayeast.cloudapp.azure.com
+      - host: dips-fhir-service.api.dips.no
         paths: 
           - /
     tls:
       - secretName: fhir-service-sandbox-tls
         hosts:
-          - dips-fhir-service.sandbox-dev.norwayeast.cloudapp.azure.com          
+          - dips-fhir-service.api.dips.no          
           
 dips-ehr-app:
   ingress:
     hosts:
-      - host: dips-ehr-app.sandbox-dev.norwayeast.cloudapp.azure.com
+      - host: dips-ehr-app.api.dips.no
         paths: 
           - /
     tls:
       - secretName: dips-ehr-app-sandbox-tls
         hosts:
-          - dips-ehr-app.sandbox-dev.norwayeast.cloudapp.azure.com
+          - dips-ehr-app.api.dips.no

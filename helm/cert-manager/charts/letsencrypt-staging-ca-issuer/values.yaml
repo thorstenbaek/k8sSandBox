@@ -1,0 +1,4 @@
+caIssuerName: letsencrypt-staging
+
+letsencrypt:
+  email: myemail@dips.no

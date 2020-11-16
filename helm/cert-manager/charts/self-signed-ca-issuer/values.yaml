@@ -1,0 +1,9 @@
+caIssuerName: self-signed
+certificateName: self-signed-certificate
+clientCertificateName: self-signed-client-certificate
+serverCertificateName: self-signed-server-certificate
+
+# Add a list of namespaces where the self-signed ca issuer will be available
+namespaces: []
+    # - name: namespace1
+    # - name: namespace2

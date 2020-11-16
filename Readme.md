@@ -33,10 +33,19 @@ Simple service implementing the FHIR-calls needed for our sand box. The services
 - Helm 3+: https://helm.sh/docs/intro/install/
 - Azure cli: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
 
+### nginx - ingress
 Add [ingress-nginx](https://kubernetes.github.io/ingress-nginx/) to helm repo:
 ```
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx/
 ```
+
+### cert-manager
+Add [cert-manager](https://artifacthub.io/packages/helm/jetstack/cert-manager)
+
+helm repo add cert-manager https://artifacthub.io/packages/helm/jetstack/cert-manager
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.1.0-alpha.1/cert-manager.crds.yaml
+
+kubectl create namespace cert-manager
 
 
 ## Installation
@@ -46,11 +55,22 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx/
 ### Create Sandbox environment
 ```
 kubectl create namespace ingress-nginx
-helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx
+helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --set controller.service.loadBalancerIP="51.120.4.87"
+```
 
+#### PostgresSQL
+```
+kubectl. create namespace postgres
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install my-release bitnami/postgresql
+
+// Run postgres client
+kubectl run postgres-postgresql-client --rm --tty -i --restart='Never' --namespace postgres --image docker.io/bitnami/postgresql:11.9.0-debian-10-r73 --env="PGPASSWORD=postgres123" --command -- psql 
+```
+### Create sandbox
+```
 cd helm\SandBox
 kubectl create namespace sandbox
-helm install sandbox . --namespace sandbox
 helm install sandbox . -f values.localhost.yaml -n sandbox
 //helm install sandbox . -f values.azure.yaml -n sandbox
 ```

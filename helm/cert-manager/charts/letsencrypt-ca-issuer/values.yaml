@@ -1,0 +1,4 @@
+caIssuerName: letsencrypt
+
+letsencrypt:
+  email: myemail@dips.no

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: self-signed-ca-issuer
+description: A local Helm chart to deploy a self signed root ca issuer
+type: application
+version: 0.1.0
+appVersion: 1.0.0
