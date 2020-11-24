@@ -46,3 +46,14 @@ dips-ehr-app:
       - secretName: dips-ehr-app-sandbox-tls
         hosts:
           - dips-ehr-app.api.dips.no
+          
+nav-pleiepenger:
+  ingress:
+    hosts:
+      - host: nav-pleiepenger.api.dips.no
+        paths: 
+          - /
+    tls:
+      - secretName: nav-pleiepenger-sandbox-tls
+        hosts:
+          - nav-pleiepenger.api.dips.no

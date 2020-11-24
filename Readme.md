@@ -60,12 +60,30 @@ helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx
 
 #### PostgresSQL
 ```
-kubectl. create namespace postgres
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install my-release bitnami/postgresql
+# https://github.com/cetic/helm-postgresql
+helm repo add cetic https://cetic.github.io/helm-charts
+helm repo update
 
-// Run postgres client
-kubectl run postgres-postgresql-client --rm --tty -i --restart='Never' --namespace postgres --image docker.io/bitnami/postgresql:11.9.0-debian-10-r73 --env="PGPASSWORD=postgres123" --command -- psql 
+kubectl create namespace postgres
+
+helm install postgres cetic/postgresql -n postgres
+helm delete --purge postgres -n postgres
+```
+#### PgAdmin 
+```
+# https://hub.kubeapps.com/charts/cetic/pgadmin
+helm repo add cetic https://cetic.github.io/helm-charts
+helm repo update
+
+helm install pgadmin runix/pgadmin4 -n postgres
+
+
+//not able to set password here....
+# https://github.com/rowanruseler/helm-charts
+# helm repo add runix https://helm.runix.net/
+# helm repo update
+
+# helm install pgadmin4 runix/pgadmin4 -n postgres
 ```
 ### Create sandbox
 ```

@@ -47,3 +47,14 @@ dips-ehr-app:
         hosts:
           - dips-ehr-app.localhost
 
+nav-pleiepenger:
+  ingress:
+    hosts:
+      - host: nav-pleiepenger.localhost
+        paths: 
+          - /
+    tls:
+      - secretName: nav-pleiepenger-sandbox-tls
+        hosts:
+          - nav-pleiepenger.localhost
+
