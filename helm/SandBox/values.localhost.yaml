@@ -22,20 +22,6 @@ dips-ehr-security:
         hosts:                  
           - dips-ehr-security.localhost
 
-dips-fhir-service:
-  env:
-    ENVIRONMENT: "dips-ehr-app.localhost"  
-    CONFIGURATION_SERVICE_URI: sandbox-dips-ehr-configuration
-  ingress:
-    hosts:
-      - host: dips-fhir-service.localhost
-        paths: 
-          - /
-    tls:
-      - secretName: fhir-service-sandbox-tls
-        hosts:
-          - dips-fhir-service.localhost
-
 dips-ehr-app:
   ingress:
     hosts:
@@ -58,3 +44,17 @@ nav-pleiepenger:
         hosts:
           - nav-pleiepenger.localhost
 
+dips-fhir-service2:
+  env:
+    ENVIRONMENT: "dips-ehr-app.localhost"  
+    CONNECTION_STRING: "server=postgres-postgresql.postgres.svc.cluster.local;database=fhirbase;user id=postgres;password=postgres;"
+    CONFIGURATION_SERVICE_URI: sandbox-dips-ehr-configuration    
+  ingress:
+    hosts:
+      - host: dips.fhir.service.localhost
+        paths: 
+          - /
+    tls:
+      - secretName: fhir.service.sandbox-tls
+        hosts:
+          - dips.fhir.service.localhost
