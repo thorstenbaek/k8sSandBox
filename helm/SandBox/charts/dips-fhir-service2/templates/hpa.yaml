@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "dips-fhir-service.fullname" . }}
+  name: {{ include "dips.fhir.service.fullname" . }}
   labels:
-    {{- include "dips-fhir-service.labels" . | nindent 4 }}
+    {{- include "dips.fhir.service.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "dips-fhir-service.fullname" . }}
+    name: {{ include "dips.fhir.service.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:

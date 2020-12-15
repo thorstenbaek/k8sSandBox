@@ -42,10 +42,11 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx/
 ### cert-manager
 Add [cert-manager](https://artifacthub.io/packages/helm/jetstack/cert-manager)
 
+//kubectl create namespace cert-manager
+
 helm repo add cert-manager https://artifacthub.io/packages/helm/jetstack/cert-manager
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.1.0-alpha.1/cert-manager.crds.yaml
 
-kubectl create namespace cert-manager
 
 
 ## Installation
@@ -53,6 +54,7 @@ kubectl create namespace cert-manager
 ### Commands
 
 ### Create Sandbox environment
+#### nginx
 ```
 kubectl create namespace ingress-nginx
 helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --set controller.service.loadBalancerIP="51.120.4.87"
@@ -77,14 +79,20 @@ helm repo update
 
 helm install pgadmin runix/pgadmin4 -n postgres
 
+# Check postgres running 
+pg_isready -h postgres-postgresql -p 5432
 
-//not able to set password here....
-# https://github.com/rowanruseler/helm-charts
-# helm repo add runix https://helm.runix.net/
-# helm repo update
+Username: chart@example.local
+Password: SuperSecret
 
 # helm install pgadmin4 runix/pgadmin4 -n postgres
 ```
+
+### Import FHIR Data
+
+kubectl apply -f https://raw.githubusercontent.com/thorstenbaek/import-fhirdata-job/master/manifests/import-fhirdata-job.yaml -n postgres
+
+
 ### Create sandbox
 ```
 cd helm\SandBox

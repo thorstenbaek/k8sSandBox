@@ -20,21 +20,7 @@ dips-ehr-security:
     tls:
       - secretName: security-sandbox-tls
         hosts:
-          - dips-ehr-security.api.dips.no
-
-dips-fhir-service:
-  env:
-    ENVIRONMENT: "dips-ehr-app.api.dips.no"  
-    CONFIGURATION_SERVICE_URI: sandbox-dips-ehr-configuration
-  ingress:
-    hosts:
-      - host: dips-fhir-service.api.dips.no
-        paths: 
-          - /
-    tls:
-      - secretName: fhir-service-sandbox-tls
-        hosts:
-          - dips-fhir-service.api.dips.no          
+          - dips-ehr-security.api.dips.no     
           
 dips-ehr-app:
   ingress:
@@ -57,3 +43,18 @@ nav-pleiepenger:
       - secretName: nav-pleiepenger-sandbox-tls
         hosts:
           - nav-pleiepenger.api.dips.no
+
+dips-fhir-service2:
+  env:
+    ENVIRONMENT: "dips-ehr-app.api.dips.no"  
+    CONNECTION_STRING: "server=postgres-postgresql.postgres.svc.cluster.local;database=fhirbase;user id=postgres;password=postgres;"
+    CONFIGURATION_SERVICE_URI: sandbox-dips-ehr-configuration    
+  ingress:
+    hosts:
+      - host: dips.fhir.service.api.dips.no
+        paths: 
+          - /
+    tls:
+      - secretName: fhir.service.sandbox-tls
+        hosts:
+          - dips.fhir.service.api.dips.no
