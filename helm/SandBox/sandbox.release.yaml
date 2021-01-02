@@ -279,16 +279,14 @@ spec:
           imagePullPolicy: Always
           env:            
             - name: CONFIGURATION_SERVICE_URI
-              value: "sandbox-dips-ehr-configuration"
+              value: "RELEASE-NAME-dips-ehr-configuration"
             - name: CONNECTION_STRING
               value: "server=postgres-postgresql.postgres.svc.cluster.local;database=fhirbase;user id=postgres;password=postgres;"
             - name: ENVIRONMENT
-              value: "dips-ehr-app.DOMAIN"
+              value: "RELEASE-NAME.dips-ehr-app.DOMAIN"
           ports:
             - name: http
-              containerPort: 80
-                              
-                    
+              containerPort: 80                                                  
               protocol: TCP          
           resources:
             {}
