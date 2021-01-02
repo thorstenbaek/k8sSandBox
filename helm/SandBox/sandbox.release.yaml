@@ -350,10 +350,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - "RELEASE_NAME.dips-ehr-app.DOMAIN"
+        - "RELEASE-NAME.dips-ehr-app.DOMAIN"
       secretName: dips-ehr-app-sandbox-tls
   rules:
-    - host: "RELEASE_NAME.dips-ehr-app.DOMAIN"
+    - host: "RELEASE-NAME.dips-ehr-app.DOMAIN"
       http:
         paths:
           - path: /
@@ -379,10 +379,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - "RELEASE_NAME.dips-ehr-configuration.DOMAIN"
+        - "RELEASE-NAME.dips-ehr-configuration.DOMAIN"
       secretName: configuration-sandbox-tls
   rules:
-    - host: "RELEASE_NAME.dips-ehr-configuration.DOMAIN"
+    - host: "RELEASE-NAME.dips-ehr-configuration.DOMAIN"
       http:
         paths:
           - path: /
@@ -408,10 +408,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - "RELEASE_NAME.dips-ehr-security.DOMAIN"
+        - "RELEASE-NAME.dips-ehr-security.DOMAIN"
       secretName: security-sandbox-tls
   rules:
-    - host: "RELEASE_NAME.dips-ehr-security.DOMAIN"
+    - host: "RELEASE-NAME.dips-ehr-security.DOMAIN"
       http:
         paths:
           - path: /
@@ -437,10 +437,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - "RELEASE_NAME.dips.fhir.service.DOMAIN"
+        - "RELEASE-NAME.dips.fhir.service.DOMAIN"
       secretName: fhir.service.sandbox-tls
   rules:
-    - host: "RELEASE_NAME.dips.fhir.service.DOMAIN"
+    - host: "RELEASE-NAME.dips.fhir.service.DOMAIN"
       http:
         paths:
           - path: /
@@ -466,10 +466,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - "RELEASE_NAME.nav-pleiepenger.DOMAIN"
+        - "RELEASE-NAME.nav-pleiepenger.DOMAIN"
       secretName: nav-pleiepenger-sandbox-tls
   rules:
-    - host: "RELEASE_NAME.nav-pleiepenger.DOMAIN"
+    - host: "RELEASE-NAME.nav-pleiepenger.DOMAIN"
       http:
         paths:
           - path: /
