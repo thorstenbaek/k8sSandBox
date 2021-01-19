@@ -139,7 +139,7 @@ spec:
         - name: dips-ehr-app
           securityContext:
             {}
-          image: "thorstenbaek/dips-ehr-app:v1.0.0.17"
+          image: "thorstenbaek/dips-ehr-app:v1.0.0.18"
           imagePullPolicy: Always
           ports:
             - name: http
