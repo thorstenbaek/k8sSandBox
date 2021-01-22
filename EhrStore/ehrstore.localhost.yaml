@@ -1,0 +1,157 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: solr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: solr
+  template:
+    metadata:
+      labels:
+        app: solr        
+    spec:      
+      containers:
+        - name: solr        
+          image: docker-dev.artifacts.dips.local/ehrstore-solr:8.0.0.2
+          imagePullPolicy: Always          
+          ports:
+            - name: http
+              containerPort: 8983
+      restartPolicy: Always
+---      
+apiVersion: v1
+kind: Service
+metadata:
+  name: solr-service  
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8983
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: solr
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: msdb
+  template:
+    metadata:
+      labels:
+        app: msdb        
+    spec:      
+      containers:
+        - name: msdb        
+          image: mcr.microsoft.com/mssql/server:2017-latest
+          imagePullPolicy: Always          
+          ports:
+            - name: http
+              containerPort: 1433
+          env:
+            - name: SA_PASSWORD
+              value: "Password123"
+            - name: ACCEPT_EULA
+              value: "Y"
+      restartPolicy: Always
+---      
+apiVersion: v1
+kind: Service
+metadata:
+  name: msdb-service  
+spec:
+  type: ClusterIP
+  ports:
+    - port: 1433
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: msdb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: ehrstore
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: ehrstore
+    template:
+        metadata:
+            labels:
+                app: ehrstore
+        spec:
+        spec:      
+          initContainers:
+          - name: check-db-ready
+            image: mcr.microsoft.com/mssql-tools
+            command: ['sh', '-c', 'until /opt/mssql-tools/bin/sqlcmd -S msdb-service,1433 -U sa -P Password123 -Q "select @@version"; do echo waiting for database; sleep 2; done;']
+          - name: init-db
+            image: mcr.microsoft.com/mssql-tools
+            command: ['sh', '-c', '/opt/mssql-tools/bin/sqlcmd -S msdb-service,1433 -U sa -P Password123 -Q "CREATE DATABASE [EhrStore]"']
+          - name: migrate-msdb-job
+            image: docker-dev.artifacts.dips.local/ehrstore-msdb-migrate-tst:1.0.0.0
+            args: ["migrate", "-url=jdbc:sqlserver://msdb-service:1433;databaseName=EhrStore", "-user=sa", "-password=Password123", "-schemas=dbo"]                
+          containers:
+              - name: ehrstore
+                image: docker-dev.artifacts.dips.local/ehrstore-tst:1.0.0.2
+                ports:
+                    - containerPort: 9000
+                      name: http
+                env:
+                    - name: "Database.Backend"
+                      value: "sqlserver"
+                    - name: Database.ConnectionString
+                      value: "Data Source=msdb-service,1433;User ID=sa;Password=Password123;Database=EhrStore;"
+                    - name: Solr.Url
+                      value: "http://solr-service:8983/solr"
+                    - name: ASPNETCORE_ENVIRONMENT
+                      value: "Development"
+                    - name: Logging__ConfigFile
+                      value: "log4net.config"              
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: ehrstore-service
+spec:
+    type: ClusterIP
+    ports:
+        - port: 9000
+          targetPort: http
+          protocol: TCP
+          name: http
+    selector:
+        app: ehrstore
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ehrstore-ingress    
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  # tls:
+  #  - hosts:
+  #      - "ehrstore.localhost"
+  #    secretName: solr-tls
+  rules:
+    - host: "ehrstore.localhost"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: ehrstore-service
+              servicePort: 9000

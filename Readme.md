@@ -101,6 +101,9 @@ helm install sandbox . -f values.localhost.yaml -n sandbox
 //helm install sandbox . -f values.azure.yaml -n sandbox
 ```
 
+### Create sandbox.release.yaml
+helm template . -f values.releaseName.yaml > sandbox.release.yaml
+
 ### Useful commands
 
 See everything:
