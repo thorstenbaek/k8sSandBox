@@ -3,58 +3,58 @@ dips-ehr-configuration:
     CONFIGURATION_SOURCE_URL: https://raw.githubusercontent.com/thorstenbaek/dips-ehr-configuration/master/configuration.json  
   ingress:
     hosts:
-      - host: RELEASE_NAME.dips-ehr-configuration.DOMAIN
+      - host: RELEASE-NAME.dips-ehr-configuration.DOMAIN
         paths: 
           - /    
     tls:
       - secretName: configuration-sandbox-tls
         hosts:
-          - RELEASE_NAME.dips-ehr-configuration.DOMAIN
+          - RELEASE-NAME.dips-ehr-configuration.DOMAIN
 
 dips-ehr-security:
   ingress:
     hosts:
-      - host: RELEASE_NAME.dips-ehr-security.DOMAIN
+      - host: RELEASE-NAME.dips-ehr-security.DOMAIN
         paths: 
           - /    
     tls:
       - secretName: security-sandbox-tls
         hosts:                  
-          - RELEASE_NAME.dips-ehr-security.DOMAIN
+          - RELEASE-NAME.dips-ehr-security.DOMAIN
 
 dips-ehr-app:
   ingress:
     hosts:
-      - host: RELEASE_NAME.dips-ehr-app.DOMAIN
+      - host: RELEASE-NAME.dips-ehr-app.DOMAIN
         paths: 
           - /
     tls:
       - secretName: dips-ehr-app-sandbox-tls
         hosts:
-          - RELEASE_NAME.dips-ehr-app.DOMAIN
+          - RELEASE-NAME.dips-ehr-app.DOMAIN
 
 nav-pleiepenger:
   ingress:
     hosts:
-      - host: RELEASE_NAME.nav-pleiepenger.DOMAIN
+      - host: RELEASE-NAME.nav-pleiepenger.DOMAIN
         paths: 
           - /
     tls:
       - secretName: nav-pleiepenger-sandbox-tls
         hosts:
-          - RELEASE_NAME.nav-pleiepenger.DOMAIN
+          - RELEASE-NAME.nav-pleiepenger.DOMAIN
 
 dips-fhir-service2:
   env:
-    ENVIRONMENT: "RELEASE_NAME.dips-ehr-app.DOMAIN"  
+    ENVIRONMENT: "RELEASE-NAME.dips-ehr-app.DOMAIN"  
     CONNECTION_STRING: "server=postgres-postgresql.postgres.svc.cluster.local;database=fhirbase;user id=postgres;password=postgres;"
-    CONFIGURATION_SERVICE_URI: RELEASE_NAME-dips-ehr-configuration    
+    CONFIGURATION_SERVICE_URI: RELEASE-NAME-dips-ehr-configuration    
   ingress:
     hosts:
-      - host: RELEASE_NAME.dips.fhir.service.DOMAIN
+      - host: RELEASE-NAME.dips.fhir.service.DOMAIN
         paths: 
           - /
     tls:
       - secretName: fhir.service.sandbox-tls
         hosts:
-          - RELEASE_NAME.dips.fhir.service.DOMAIN
+          - RELEASE-NAME.dips.fhir.service.DOMAIN
