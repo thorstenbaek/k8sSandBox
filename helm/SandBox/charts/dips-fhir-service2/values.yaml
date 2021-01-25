@@ -8,7 +8,7 @@ image:
   repository: thorstenbaek/dips.fhir.service
   pullPolicy: Always
   imageTagDelimiter: ":"
-  tag: "v1.0.0.15"   
+  tag: "v1.0.0.16"   
 ports:
   containerPort: 80
 
