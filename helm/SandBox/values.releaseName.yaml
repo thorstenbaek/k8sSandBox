@@ -33,6 +33,17 @@ dips-ehr-app:
         hosts:
           - RELEASE-NAME.dips-ehr-app.DOMAIN
 
+dips-ehr-notes:
+  ingress:
+    hosts:
+      - host: RELEASE-NAME.dips-ehr-notes.DOMAIN
+        paths: 
+          - /
+    tls:
+      - secretName: dips-ehr-notes-sandbox-tls
+        hosts:
+          - RELEASE-NAME.dips-ehr-notes.DOMAIN
+
 nav-pleiepenger:
   ingress:
     hosts:

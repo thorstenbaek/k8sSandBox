@@ -33,6 +33,17 @@ dips-ehr-app:
         hosts:
           - dips-ehr-app.localhost
 
+dips-ehr-notes:
+  ingress:
+    hosts:
+      - host: dips-ehr-notes.localhost
+        paths: 
+          - /
+    tls:
+      - secretName: dips-ehr-notes-sandbox-tls
+        hosts:
+          - dips-ehr-notes.localhost
+
 nav-pleiepenger:
   ingress:
     hosts:
