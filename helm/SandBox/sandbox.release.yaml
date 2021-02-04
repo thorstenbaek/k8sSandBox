@@ -258,8 +258,7 @@ spec:
         - name: dips-ehr-notes
           securityContext:
             {}
-          image: "thorstenbaek/dips-ehr-notes:latest"
-          imagePullPolicy: Always
+          image: "thorstenbaek/dips-ehr-notes"          
           ports:
             - name: http
               containerPort: 80
