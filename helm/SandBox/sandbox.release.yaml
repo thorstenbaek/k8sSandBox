@@ -258,7 +258,7 @@ spec:
         - name: dips-ehr-notes
           securityContext:
             {}
-          image: "thorstenbaek/dips-ehr-notes"
+          image: "thorstenbaek/dips-ehr-notes:v1.0.0.3"
           imagePullPolicy: Always
           ports:
             - name: http
