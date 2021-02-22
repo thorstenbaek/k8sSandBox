@@ -305,7 +305,7 @@ spec:
         - name: dips-ehr-security
           securityContext:
             {}
-          image: "thorstenbaek/dips-ehr-security:v1.0.0.0"
+          image: "thorstenbaek/dips-ehr-security:v1.0.0.1"
           imagePullPolicy: Always
           ports:
             - name: http
