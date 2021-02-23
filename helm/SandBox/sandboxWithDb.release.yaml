@@ -16,8 +16,8 @@ spec:
     port: 5432
     targetPort: postgresql
   selector:
-    app: postgresql
-    release: "postgres"
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/instance: RELEASE-NAME    
 ---
 # Source: postgresql/templates/statefulset.yaml
 apiVersion: apps/v1
