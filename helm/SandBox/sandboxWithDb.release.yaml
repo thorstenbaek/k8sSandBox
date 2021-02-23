@@ -1,0 +1,831 @@
+﻿# Source: postgresql/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-postgres-postgresql
+  labels:
+    app: postgresql
+    chart: postgresql-0.2.1
+    release: "postgres"
+    heritage: "Helm"
+spec:
+  type: ClusterIP
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: postgresql
+  selector:
+    app: postgresql
+    release: "postgres"
+---
+# Source: postgresql/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-postgres-postgresql
+  labels:
+    app: postgresql
+    chart: postgresql-0.2.1
+    release: "postgres"
+    heritage: "Helm"
+spec:
+  serviceName: postgres-postgresql-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+      release: "postgres"
+  template:
+    metadata:
+      name: postgres-postgresql
+      labels:
+        app: "postgresql"
+        chart: postgresql-0.2.1
+        release: "postgres"
+        heritage: "Helm"
+    spec:
+      initContainers:
+      - name: init-chmod-data
+        image: "debian:buster-slim"
+        imagePullPolicy: "Always"
+        resources:
+          {}
+        command:
+          - sh
+          - -c
+          - |
+            mkdir -p /var/lib/postgresql/data
+            chmod 700 /var/lib/postgresql/data
+            find /var/lib/postgresql -mindepth 1 -maxdepth 1 -not -name ".snapshot" -not -name "lost+found" | \
+              xargs chown -R 1001:1001
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql
+          subPath:
+      containers:
+      - name: postgres-postgresql
+        image: "postgres:11.5"
+        imagePullPolicy: "IfNotPresent"
+        resources:
+          {}
+        env:
+        - name: POSTGRES_PASSWORD
+          value: "postgres"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_DB
+          value: "postgres"
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
+        ports:
+        - name: postgresql
+          containerPort: 5432
+        livenessProbe:
+            null
+        readinessProbe:
+            null
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+          subPath:
+          readOnly: false
+      volumes:
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "10Gi"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: import-fhirdata-job
+spec:  
+  template:    
+    spec:      
+      initContainers:
+      - name: check-db-ready
+        image: postgres:11.5
+        command: ['sh', '-c', 
+          'echo checking database;
+          until pg_isready -h RELEASE-NAME-postgres-postgresql -p 5432; 
+          do echo waiting for database; sleep 2; done;']
+      containers:
+      - name: import-fhirdata-job
+        image: thorstenbaek/import-fhirdata:v0.0.0.2
+        env:
+        - name: PGHOST
+          value: "RELEASE-NAME-postgres-postgresql"
+        - name: PGPORT
+          value: "5432"
+        - name: PGUSER
+          value: "postgres"
+        - name: PGPASSWORD
+          value: "postgres"
+      restartPolicy: Never
+---
+# Source: SandBox/charts/dips-ehr-app/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-dips-ehr-app
+  labels:
+    helm.sh/chart: dips-ehr-app-0.1.0
+    app.kubernetes.io/name: dips-ehr-app
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: dips-ehr-app
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: SandBox/charts/dips-ehr-configuration/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-dips-ehr-configuration
+  labels:
+    helm.sh/chart: dips-ehr-configuration-0.1.0
+    app.kubernetes.io/name: dips-ehr-configuration
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: dips-ehr-configuration
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: SandBox/charts/dips-ehr-notes/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-dips-ehr-notes
+  labels:
+    helm.sh/chart: dips-ehr-notes-0.1.0
+    app.kubernetes.io/name: dips-ehr-notes
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: dips-ehr-notes
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: SandBox/charts/dips-ehr-security/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-dips-ehr-security
+  labels:
+    helm.sh/chart: dips-ehr-security-0.1.0
+    app.kubernetes.io/name: dips-ehr-security
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: dips-ehr-security
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: SandBox/charts/dips-fhir-service2/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-dips-fhir-service2
+  labels:
+    helm.sh/chart: dips-fhir-service2-0.1.0
+    app.kubernetes.io/name: dips-fhir-service2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: dips-fhir-service2
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: SandBox/charts/nav-pleiepenger/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-nav-pleiepenger
+  labels:
+    helm.sh/chart: nav-pleiepenger-0.1.0
+    app.kubernetes.io/name: nav-pleiepenger
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: nav-pleiepenger
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: SandBox/charts/dips-ehr-app/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-dips-ehr-app
+  labels:
+    helm.sh/chart: dips-ehr-app-0.1.0
+    app.kubernetes.io/name: dips-ehr-app
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dips-ehr-app
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dips-ehr-app
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: dips-ehr-app
+          securityContext:
+            {}
+          image: "thorstenbaek/dips-ehr-app:v1.0.0.19"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+---
+# Source: SandBox/charts/dips-ehr-configuration/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-dips-ehr-configuration
+  labels:
+    helm.sh/chart: dips-ehr-configuration-0.1.0
+    app.kubernetes.io/name: dips-ehr-configuration
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dips-ehr-configuration
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dips-ehr-configuration
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: dips-ehr-configuration
+          securityContext:
+            {}
+          image: "thorstenbaek/dips-ehr-configuration:v1.0.0.3"
+          imagePullPolicy: Always
+          env:            
+            - name: CONFIGURATION_SOURCE_URL
+              value: "https://raw.githubusercontent.com/thorstenbaek/dips-ehr-configuration/master/configuration.json"
+          ports:
+            - name: http       
+              containerPort: 80      
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {}
+---
+# Source: SandBox/charts/dips-ehr-notes/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-dips-ehr-notes
+  labels:
+    helm.sh/chart: dips-ehr-notes-0.1.0
+    app.kubernetes.io/name: dips-ehr-notes
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dips-ehr-notes
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dips-ehr-notes
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: dips-ehr-notes
+          securityContext:
+            {}
+          image: "thorstenbaek/dips-ehr-notes:latest"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+---
+# Source: SandBox/charts/dips-ehr-security/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-dips-ehr-security
+  labels:
+    helm.sh/chart: dips-ehr-security-0.1.0
+    app.kubernetes.io/name: dips-ehr-security
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app.kubernetes.io/name: dips-ehr-security
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dips-ehr-security
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: dips-ehr-security
+          securityContext:
+            {}
+          image: "thorstenbaek/dips-ehr-security:v1.0.0.0"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {}
+---
+# Source: SandBox/charts/dips-fhir-service2/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-dips-fhir-service2
+  labels:
+    helm.sh/chart: dips-fhir-service2-0.1.0
+    app.kubernetes.io/name: dips-fhir-service2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dips-fhir-service2
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dips-fhir-service2
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: dips-fhir-service2
+          securityContext:
+            {}
+          image: "thorstenbaek/dips.fhir.service:v1.0.0.16"
+          imagePullPolicy: Always
+          env:            
+            - name: CONFIGURATION_SERVICE_URI
+              value: "RELEASE-NAME-dips-ehr-configuration"
+            - name: CONNECTION_STRING
+              value: "server=RELEASE-NAME-postgres-postgresql;database=fhirbase;user id=postgres;password=postgres;"
+            - name: ENVIRONMENT
+              value: "RELEASE-NAME.dips-ehr-app.DOMAIN"
+          ports:
+            - name: http
+              containerPort: 80                                                  
+              protocol: TCP          
+          resources:
+            {}
+---
+# Source: SandBox/charts/nav-pleiepenger/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-nav-pleiepenger
+  labels:
+    helm.sh/chart: nav-pleiepenger-0.1.0
+    app.kubernetes.io/name: nav-pleiepenger
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nav-pleiepenger
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nav-pleiepenger
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: nav-pleiepenger
+          securityContext:
+            {}
+          image: "thorstenbaek/nav-pleiepenger:v1.0.0.6"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP         
+          resources:
+            {}
+---
+# Source: SandBox/charts/dips-ehr-app/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: RELEASE-NAME-dips-ehr-app
+  labels:
+    helm.sh/chart: dips-ehr-app-0.1.0
+    app.kubernetes.io/name: dips-ehr-app
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - "RELEASE-NAME.dips-ehr-app.DOMAIN"
+      secretName: dips-ehr-app-sandbox-tls
+  rules:
+    - host: "RELEASE-NAME.dips-ehr-app.DOMAIN"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: RELEASE-NAME-dips-ehr-app
+              servicePort: 80
+---
+# Source: SandBox/charts/dips-ehr-configuration/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: RELEASE-NAME-dips-ehr-configuration
+  labels:
+    helm.sh/chart: dips-ehr-configuration-0.1.0
+    app.kubernetes.io/name: dips-ehr-configuration
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - "RELEASE-NAME.dips-ehr-configuration.DOMAIN"
+      secretName: configuration-sandbox-tls
+  rules:
+    - host: "RELEASE-NAME.dips-ehr-configuration.DOMAIN"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: RELEASE-NAME-dips-ehr-configuration
+              servicePort: 80
+---
+# Source: SandBox/charts/dips-ehr-notes/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: RELEASE-NAME-dips-ehr-notes
+  labels:
+    helm.sh/chart: dips-ehr-notes-0.1.0
+    app.kubernetes.io/name: dips-ehr-notes
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - "RELEASE-NAME.dips-ehr-notes.DOMAIN"
+      secretName: dips-ehr-notes-sandbox-tls
+  rules:
+    - host: "RELEASE-NAME.dips-ehr-notes.DOMAIN"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: RELEASE-NAME-dips-ehr-notes
+              servicePort: 80
+---
+# Source: SandBox/charts/dips-ehr-security/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: RELEASE-NAME-dips-ehr-security
+  labels:
+    helm.sh/chart: dips-ehr-security-0.1.0
+    app.kubernetes.io/name: dips-ehr-security
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - "RELEASE-NAME.dips-ehr-security.DOMAIN"
+      secretName: security-sandbox-tls
+  rules:
+    - host: "RELEASE-NAME.dips-ehr-security.DOMAIN"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: RELEASE-NAME-dips-ehr-security
+              servicePort: 80
+---
+# Source: SandBox/charts/dips-fhir-service2/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: RELEASE-NAME-dips-fhir-service2
+  labels:
+    helm.sh/chart: dips-fhir-service2-0.1.0
+    app.kubernetes.io/name: dips-fhir-service2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - "RELEASE-NAME.dips.fhir.service.DOMAIN"
+      secretName: fhir.service.sandbox-tls
+  rules:
+    - host: "RELEASE-NAME.dips.fhir.service.DOMAIN"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: RELEASE-NAME-dips-fhir-service2
+              servicePort: 80
+---
+# Source: SandBox/charts/nav-pleiepenger/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: RELEASE-NAME-nav-pleiepenger
+  labels:
+    helm.sh/chart: nav-pleiepenger-0.1.0
+    app.kubernetes.io/name: nav-pleiepenger
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - "RELEASE-NAME.nav-pleiepenger.DOMAIN"
+      secretName: nav-pleiepenger-sandbox-tls
+  rules:
+    - host: "RELEASE-NAME.nav-pleiepenger.DOMAIN"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: RELEASE-NAME-nav-pleiepenger
+              servicePort: 80
+---
+# Source: SandBox/charts/dips-ehr-app/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "RELEASE-NAME-dips-ehr-app-test-connection"
+  labels:
+    helm.sh/chart: dips-ehr-app-0.1.0
+    app.kubernetes.io/name: dips-ehr-app
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['RELEASE-NAME-dips-ehr-app:80']
+  restartPolicy: Never
+---
+# Source: SandBox/charts/dips-ehr-configuration/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "RELEASE-NAME-dips-ehr-configuration-test-connection"
+  labels:
+    helm.sh/chart: dips-ehr-configuration-0.1.0
+    app.kubernetes.io/name: dips-ehr-configuration
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['RELEASE-NAME-dips-ehr-configuration:80']
+  restartPolicy: Never
+---
+# Source: SandBox/charts/dips-ehr-notes/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "RELEASE-NAME-dips-ehr-notes-test-connection"
+  labels:
+    helm.sh/chart: dips-ehr-notes-0.1.0
+    app.kubernetes.io/name: dips-ehr-notes
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['RELEASE-NAME-dips-ehr-notes:80']
+  restartPolicy: Never
+---
+# Source: SandBox/charts/dips-ehr-security/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "RELEASE-NAME-dips-ehr-security-test-connection"
+  labels:
+    helm.sh/chart: dips-ehr-security-0.1.0
+    app.kubernetes.io/name: dips-ehr-security
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['RELEASE-NAME-dips-ehr-security:80']
+  restartPolicy: Never
+---
+# Source: SandBox/charts/dips-fhir-service2/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "RELEASE-NAME-dips-fhir-service2-test-connection"
+  labels:
+    helm.sh/chart: dips-fhir-service2-0.1.0
+    app.kubernetes.io/name: dips-fhir-service2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['RELEASE-NAME-dips-fhir-service2:80']
+  restartPolicy: Never
+---
+# Source: SandBox/charts/nav-pleiepenger/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "RELEASE-NAME-nav-pleiepenger-test-connection"
+  labels:
+    helm.sh/chart: nav-pleiepenger-0.1.0
+    app.kubernetes.io/name: nav-pleiepenger
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['RELEASE-NAME-nav-pleiepenger:80']
+  restartPolicy: Never
