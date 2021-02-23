@@ -11,9 +11,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - name: postgresql
-    port: 5432
-    targetPort: postgresql
+  - port: 5432    
   selector:
     app: RELEASE-NAME-postgresql
     release: "RELEASE-NAME-postgres"
