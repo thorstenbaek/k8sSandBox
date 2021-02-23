@@ -1,0 +1,133 @@
+---
+# Source: postgresql/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-postgres-postgresql
+  labels:
+    app: RELEASE-NAME-postgresql
+    chart: postgresql-0.2.1
+    release: "postgres"
+    heritage: "Helm"
+spec:
+  type: ClusterIP
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: postgresql
+  selector:
+    app: RELEASE-NAME-postgresql
+    release: "RELEASE-NAME-postgres"
+---
+# Source: postgresql/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-postgres-postgresql
+  labels:
+    app: RELEASE-NAME-postgresql
+    chart: postgresql-0.2.1
+    release: "RELEASE-NAME-postgres"
+    heritage: "Helm"
+spec:
+  serviceName: RELEASE-NAME-postgres-postgresql-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: RELEASE-NAME-postgresql
+      release: "RELEASE-NAME-postgres"
+  template:
+    metadata:
+      name: RELEASE-NAME-postgres-postgresql
+      labels:
+        app: "RELEASE-NAME-postgresql"
+        chart: postgresql-0.2.1
+        release: "RELEASE-NAME-postgres"
+        heritage: "Helm"
+    spec:
+      initContainers:
+      - name: init-chmod-data
+        image: "debian:buster-slim"
+        imagePullPolicy: "Always"
+        resources:
+          {}
+        command:
+          - sh
+          - -c
+          - |
+            mkdir -p /var/lib/postgresql/data
+            chmod 700 /var/lib/postgresql/data
+            find /var/lib/postgresql -mindepth 1 -maxdepth 1 -not -name ".snapshot" -not -name "lost+found" | \
+              xargs chown -R 1001:1001
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: RELEASE-NAME-data
+          mountPath: /var/lib/postgresql
+          subPath:
+      containers:
+      - name: postgres-postgresql
+        image: "postgres:11.5"
+        imagePullPolicy: "IfNotPresent"
+        resources:
+          {}
+        env:
+        - name: POSTGRES_PASSWORD
+          value: "postgres"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_DB
+          value: "postgres"
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
+        ports:
+        - name: postgresql
+          containerPort: 5432
+        livenessProbe:
+            null
+        readinessProbe:
+            null
+        volumeMounts:
+        - name: RELEASE-NAME-data
+          mountPath: /var/lib/postgresql/data
+          subPath:
+          readOnly: false
+      volumes:
+  volumeClaimTemplates:
+    - metadata:
+        name: RELEASE-NAME-data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "10Gi"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: RELEASE-NAME-postgres-import-fhirdata-job
+spec:  
+  template:    
+    spec:      
+      initContainers:
+      - name: check-db-ready
+        image: postgres:11.5
+        command: ['sh', '-c', 
+          'echo checking database;
+          until pg_isready -h RELEASE-NAME-postgres-postgresql -p 5432;           
+          do echo waiting for database; sleep 2; done;']
+      containers:
+      - name: import-fhirdata-job
+        image: thorstenbaek/import-fhirdata:v0.0.0.2
+        env:
+        - name: PGHOST
+          value: "RELEASE-NAME-postgres-postgresql"
+        - name: PGPORT
+          value: "5432"
+        - name: PGUSER
+          value: "postgres"
+        - name: PGPASSWORD
+          value: "postgres"
+      restartPolicy: Never
+---

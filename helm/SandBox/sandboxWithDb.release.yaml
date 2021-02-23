@@ -1,14 +1,14 @@
-﻿# Source: postgresql/templates/service.yaml
+﻿---
+# Source: postgresql/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
   name: RELEASE-NAME-postgres-postgresql
   labels:
-    helm.sh/chart: postgresql-0.2.1
-    app.kubernetes.io/name: postgresql
-    app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/managed-by: Helm
+    app: RELEASE-NAME-postgresql
+    chart: postgresql-0.2.1
+    release: "postgres"
+    heritage: "Helm"
 spec:
   type: ClusterIP
   ports:
@@ -16,8 +16,8 @@ spec:
     port: 5432
     targetPort: postgresql
   selector:
-    app.kubernetes.io/name: postgresql
-    app.kubernetes.io/instance: RELEASE-NAME    
+    app: RELEASE-NAME-postgresql
+    release: "RELEASE-NAME-postgres"
 ---
 # Source: postgresql/templates/statefulset.yaml
 apiVersion: apps/v1
@@ -25,25 +25,24 @@ kind: StatefulSet
 metadata:
   name: RELEASE-NAME-postgres-postgresql
   labels:
-    helm.sh/chart: postgresql-0.2.1
-    app.kubernetes.io/name: postgresql
-    app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/managed-by: Helm    
+    app: RELEASE-NAME-postgresql
+    chart: postgresql-0.2.1
+    release: "RELEASE-NAME-postgres"
+    heritage: "Helm"
 spec:
-  serviceName: postgres-postgresql-headless
+  serviceName: RELEASE-NAME-postgres-postgresql-headless
   replicas: 1
   selector:
     matchLabels:
-      app: postgresql
-      release: "postgres"
+      app: RELEASE-NAME-postgresql
+      release: "RELEASE-NAME-postgres"
   template:
     metadata:
-      name: postgres-postgresql
+      name: RELEASE-NAME-postgres-postgresql
       labels:
-        app: "postgresql"
+        app: "RELEASE-NAME-postgresql"
         chart: postgresql-0.2.1
-        release: "postgres"
+        release: "RELEASE-NAME-postgres"
         heritage: "Helm"
     spec:
       initContainers:
@@ -63,7 +62,7 @@ spec:
         securityContext:
           runAsUser: 0
         volumeMounts:
-        - name: data
+        - name: RELEASE-NAME-data
           mountPath: /var/lib/postgresql
           subPath:
       containers:
@@ -89,14 +88,14 @@ spec:
         readinessProbe:
             null
         volumeMounts:
-        - name: data
+        - name: RELEASE-NAME-data
           mountPath: /var/lib/postgresql/data
           subPath:
           readOnly: false
       volumes:
   volumeClaimTemplates:
     - metadata:
-        name: data
+        name: RELEASE-NAME-data
       spec:
         accessModes:
           - "ReadWriteOnce"
@@ -107,7 +106,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: import-fhirdata-job
+  name: RELEASE-NAME-postgres-import-fhirdata-job
 spec:  
   template:    
     spec:      
@@ -116,7 +115,7 @@ spec:
         image: postgres:11.5
         command: ['sh', '-c', 
           'echo checking database;
-          until pg_isready -h RELEASE-NAME-postgres-postgresql -p 5432; 
+          until pg_isready -h RELEASE-NAME-postgres-postgresql -p 5432;           
           do echo waiting for database; sleep 2; done;']
       containers:
       - name: import-fhirdata-job
