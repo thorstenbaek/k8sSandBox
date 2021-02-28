@@ -344,7 +344,7 @@ spec:
         - name: dips-fhir-service2
           securityContext:
             {}
-          image: "thorstenbaek/dips.fhir.service:v1.0.0.16"
+          image: "thorstenbaek/dips.fhir.service:v1.0.0.17"
           imagePullPolicy: Always
           env:            
             - name: CONFIGURATION_SERVICE_URI
