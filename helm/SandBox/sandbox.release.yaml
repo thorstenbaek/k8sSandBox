@@ -1,5 +1,4 @@
-﻿---
-# Source: SandBox/charts/dips-ehr-app/templates/service.yaml
+﻿# Source: SandBox/charts/dips-ehr-app/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -258,7 +257,7 @@ spec:
         - name: dips-ehr-notes
           securityContext:
             {}
-          image: "thorstenbaek/dips-ehr-notes:v1.0.0.3"
+          image: "thorstenbaek/dips-ehr-notes:latest"
           imagePullPolicy: Always
           ports:
             - name: http
@@ -305,7 +304,7 @@ spec:
         - name: dips-ehr-security
           securityContext:
             {}
-          image: "thorstenbaek/dips-ehr-security:v1.0.0.4"
+          image: "thorstenbaek/dips-ehr-security:v1.0.0.15"
           imagePullPolicy: Always
           ports:
             - name: http
@@ -340,11 +339,18 @@ spec:
       serviceAccountName: default
       securityContext:
         {}
+      initContainers:
+      - name: check-db-ready
+        image: postgres:11.5
+        command: ['sh', '-c', 
+          'echo checking database;
+          until pg_isready -h postgres-postgresql.postgres.svc.cluster.local -p 5432; 
+          do echo waiting for database; sleep 2; done;']
       containers:
         - name: dips-fhir-service2
           securityContext:
             {}
-          image: "thorstenbaek/dips.fhir.service:v1.0.0.16"
+          image: "thorstenbaek/dips.fhir.service:v1.0.0.19"
           imagePullPolicy: Always
           env:            
             - name: CONFIGURATION_SERVICE_URI
