@@ -44,6 +44,28 @@ dips-ehr-notes:
         hosts:
           - RELEASE-NAME.dips-ehr-notes.DOMAIN
 
+dips-ehr-images:
+  ingress:
+    hosts:
+      - host: RELEASE-NAME.dips-ehr-images.DOMAIN
+        paths: 
+          - /
+    tls:
+      - secretName: dips-ehr-images-sandbox-tls
+        hosts:
+          - RELEASE-NAME.dips-ehr-images.DOMAIN          
+
+dips-ehr-pdf:
+  ingress:
+    hosts:
+      - host: RELEASE-NAME.dips-ehr-pdf.DOMAIN
+        paths: 
+          - /
+    tls:
+      - secretName: dips-ehr-pdf-sandbox-tls
+        hosts:
+          - RELEASE-NAME.dips-ehr-pdf.DOMAIN          
+
 nav-pleiepenger:
   ingress:
     hosts:

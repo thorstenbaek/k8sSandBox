@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dips-ehr-images.fullname" . }}
+  labels:
+    {{- include "dips-ehr-images.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "dips-ehr-images.selectorLabels" . | nindent 4 }}

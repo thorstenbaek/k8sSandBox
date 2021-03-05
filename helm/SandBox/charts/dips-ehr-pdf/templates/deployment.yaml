@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "dips.fhir.service.fullname" . }}
+  name: {{ include "dips-ehr-pdf.fullname" . }}
   labels:
-    {{- include "dips.fhir.service.labels" . | nindent 4 }}
+    {{- include "dips-ehr-pdf.labels" . | nindent 4 }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   selector:
     matchLabels:
-      {{- include "dips.fhir.service.selectorLabels" . | nindent 6 }}
+      {{- include "dips-ehr-pdf.selectorLabels" . | nindent 6 }}
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -18,34 +18,33 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        {{- include "dips.fhir.service.selectorLabels" . | nindent 8 }}
+        {{- include "dips-ehr-pdf.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "dips.fhir.service.serviceAccountName" . }}
+      serviceAccountName: {{ include "dips-ehr-pdf.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      initContainers:
-      - name: check-db-ready
-        image: postgres:11.5
-        command: ['sh', '-c', 
-          'echo checking database;
-          until pg_isready -h postgres-postgresql.postgres.svc.cluster.local -p 5432; 
-          do echo waiting for database; sleep 2; done;']
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-            {{- include "dips.fhir.service.list-env-variables" . | indent 12 }}
           ports:
-            - name: http              
-              containerPort: 80       
-              protocol: TCP          
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

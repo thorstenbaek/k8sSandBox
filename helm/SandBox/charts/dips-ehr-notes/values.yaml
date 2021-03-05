@@ -8,7 +8,7 @@ image:
   repository: thorstenbaek/dips-ehr-notes
   pullPolicy: Always
   imageTagDelimiter: ":"
-  tag: "v1.0.0.0"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
