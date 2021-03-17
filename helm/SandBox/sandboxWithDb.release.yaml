@@ -1,7 +1,7 @@
-﻿apiVersion: v1
-kind: Namespace
-metadata:
-  name: RELEASE-NAME
+﻿# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: RELEASE-NAME
 ---
 # Source: postgresql/templates/service.yaml
 apiVersion: v1
