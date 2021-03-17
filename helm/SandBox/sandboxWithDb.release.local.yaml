@@ -230,6 +230,29 @@ spec:
     app.kubernetes.io/name: dips-ehr-notes
     app.kubernetes.io/instance: local
 ---
+# Source: SandBox/charts/dips-ehr-notes-session-api/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: local-dips-ehr-notes-session-api
+  namespace: local
+  labels:
+    helm.sh/chart: dips-ehr-notes-session-api-0.1.0
+    app.kubernetes.io/name: dips-ehr-notes-session-api
+    app.kubernetes.io/instance: local
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: dips-ehr-notes-session-api
+    app.kubernetes.io/instance: local
+---
 # Source: SandBox/charts/dips-ehr-pdf/templates/service.yaml
 apiVersion: v1
 kind: Service
@@ -500,7 +523,7 @@ spec:
         - name: dips-ehr-notes
           securityContext:
             {}
-          image: "thorstenbaek/dips-ehr-notes:latest"
+          image: "thorstenbaek/dips-ehr-notes:v1.0.0.5"
           imagePullPolicy: Always
           ports:
             - name: http
@@ -513,6 +536,54 @@ spec:
           readinessProbe:
             httpGet:
               path: /
+              port: http
+          resources:
+            {}
+---
+# Source: SandBox/charts/dips-ehr-notes-session-api/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-dips-ehr-notes-session-api
+  namespace: local
+  labels:
+    helm.sh/chart: dips-ehr-notes-session-api-0.1.0
+    app.kubernetes.io/name: dips-ehr-notes-session-api
+    app.kubernetes.io/instance: local
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dips-ehr-notes-session-api
+      app.kubernetes.io/instance: local
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dips-ehr-notes-session-api
+        app.kubernetes.io/instance: local
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: dips-ehr-notes-session-api
+          securityContext:
+            {}
+          image: "thorstenbaek/dips-ehr-notes-session-api:v1.0.0.9"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health
               port: http
           resources:
             {}
@@ -819,6 +890,40 @@ spec:
               serviceName: local-dips-ehr-notes
               servicePort: 80
 ---
+# Source: SandBox/charts/dips-ehr-notes-session-api/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: local-dips-ehr-notes-session-api
+  namespace: local
+  labels:
+    helm.sh/chart: dips-ehr-notes-session-api-0.1.0
+    app.kubernetes.io/name: dips-ehr-notes-session-api
+    app.kubernetes.io/instance: local
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/websocket-services: local-dips-ehr-notes-session-api
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+
+spec:
+  tls:
+    - hosts:
+        - "local.dips-ehr-notes-session-api.localhost"
+      secretName: dips-ehr-notes-session-api-sandbox-tls
+  rules:
+    - host: "local.dips-ehr-notes-session-api.localhost"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: local-dips-ehr-notes-session-api
+              servicePort: 80
+---
 # Source: SandBox/charts/dips-ehr-pdf/templates/ingress.yaml
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -1025,6 +1130,28 @@ spec:
       image: busybox
       command: ['wget']
       args: ['local-dips-ehr-notes:80']
+  restartPolicy: Never
+---
+# Source: SandBox/charts/dips-ehr-notes-session-api/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "local-dips-ehr-notes-session-api-test-connection"
+  namespace: local
+  labels:
+    helm.sh/chart: dips-ehr-notes-session-api-0.1.0
+    app.kubernetes.io/name: dips-ehr-notes-session-api
+    app.kubernetes.io/instance: local
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['local-dips-ehr-notes-session-api:80']
   restartPolicy: Never
 ---
 # Source: SandBox/charts/dips-ehr-pdf/templates/tests/test-connection.yaml

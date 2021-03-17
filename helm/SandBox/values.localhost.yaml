@@ -44,6 +44,17 @@ dips-ehr-notes:
         hosts:
           - dips-ehr-notes.localhost
 
+dips-ehr-notes-session-api:
+  ingress:
+    hosts:
+      - host: dips-ehr-notes-session-api.localhost
+        paths: 
+          - /
+    tls:
+      - secretName: dips-ehr-notes-session-api-sandbox-tls
+        hosts:
+          - dips-ehr-notes-session-api.localhost
+
 nav-pleiepenger:
   ingress:
     hosts:
