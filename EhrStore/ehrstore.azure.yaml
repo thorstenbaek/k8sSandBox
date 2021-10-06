@@ -89,8 +89,7 @@ spec:
     template:
         metadata:
             labels:
-                app: ehrstore
-        spec:
+                app: ehrstore        
         spec:      
           initContainers:
           - name: check-db-ready
@@ -153,3 +152,31 @@ spec:
             backend:
               serviceName: ehrstore-service
               servicePort: 9000
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: create-synthetic-ehrs
+spec:
+    template:
+        spec:
+          initContainers:
+            - name: wait-for-dependent-service
+              image: stefanevinance/wait-for-200
+              env:
+              - name: URL
+                value: http://ehrstore-service:9000
+          containers:
+          - name: create-synthetic-ehrs
+            image: "dockersandboxdev.azurecr.io/fhirfeedehr:1.0.0.3"
+            args:
+                [
+                    "-d",
+                    "/data",
+                    "-c",
+                    "/config",
+                    "-o",
+                    "http://ehrstore-service:9000",
+                ]
+          restartPolicy: Never
+    backoffLimit: 4
